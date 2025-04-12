@@ -1,0 +1,1307 @@
+<!DOCTYPE html>
+<html lang="en">
+    
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StudyHub - Full Stack Learning Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .study-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.35s;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card:hover .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            backface-visibility: hidden;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+        }
+        .pomodoro-timer {
+            box-shadow: 0 0 20px rgba(118, 75, 162, 0.5);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-graduation-cap text-3xl"></i>
+                    <h1 class="text-2xl font-bold">StudyHub</h1>
+                </div>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#" class="hover:text-gray-200 font-medium">Dashboard</a>
+                    <a href="#" class="hover:text-gray-200 font-medium">Subjects</a>
+                    <a href="#" class="hover:text-gray-200 font-medium">Resources</a>
+                    <a href="#" class="hover:text-gray-200 font-medium">Progress</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <button id="auth-button" class="bg-white text-indigo-700 px-4 py-2 rounded-full font-medium hover:bg-gray-100 transition">
+                        Sign In
+                    </button>
+                    <button class="md:hidden text-2xl">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+        <!-- Welcome Section -->
+        <section class="mb-12">
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="flex flex-col md:flex-row items-center">
+                    <div class="md:w-2/3 mb-6 md:mb-0">
+                        <h2 class="text-3xl font-bold text-gray-800 mb-4" id="welcome-message">Welcome back, Student!</h2>
+                        <p class="text-gray-600 mb-6">Ready to tackle your study goals today? You've completed <span id="progress-percent">65</span>% of your weekly target. Keep going!</p>
+                        <div class="w-full bg-gray-200 rounded-full h-4 mb-4">
+                            <div class="gradient-bg h-4 rounded-full" id="progress-bar" style="width: 65%"></div>
+                        </div>
+                        <button class="gradient-bg text-white px-6 py-3 rounded-lg font-medium hover:opacity-90 transition" id="add-task-btn">
+                            <i class="fas fa-plus mr-2"></i> Add New Task
+                        </button>
+                    </div>
+                    <div class="md:w-1/3 flex justify-center">
+                        <div class="relative w-40 h-40">
+                            <svg class="w-full h-full" viewBox="0 0 100 100">
+                                <circle class="text-gray-200" stroke-width="8" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" />
+                                <circle class="text-indigo-500 progress-ring__circle" stroke-width="8" stroke-linecap="round" stroke="currentColor" fill="transparent" r="40" cx="50" cy="50" stroke-dasharray="251.2" stroke-dashoffset="87.92" id="progress-circle" />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span class="text-3xl font-bold text-gray-800" id="progress-text">65%</span>
+                                <span class="text-gray-500 text-sm">Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Study Tools Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Study Tools</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Pomodoro Timer -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden study-card transition">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-indigo-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-clock text-indigo-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Pomodoro Timer</h3>
+                        </div>
+                        <div class="pomodoro-timer mx-auto w-48 h-48 rounded-full bg-white border-8 border-indigo-100 flex items-center justify-center mb-4">
+                            <div class="text-center">
+                                <div id="timer-display" class="text-4xl font-bold text-gray-800">25:00</div>
+                                <div id="timer-state" class="text-gray-500">Ready to start</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-center space-x-4">
+                            <button id="start-timer" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition">
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button id="pause-timer" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                                <i class="fas fa-pause"></i>
+                            </button>
+                            <button id="reset-timer" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition">
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Flash Cards -->
+                <div class="flip-card bg-white rounded-xl shadow-md overflow-hidden study-card transition h-full">
+                    <div class="flip-card-inner h-full">
+                        <div class="flip-card-front h-full flex flex-col p-6">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-purple-100 p-3 rounded-full mr-4">
+                                    <i class="fas fa-layer-group text-purple-600 text-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-gray-800">Flash Cards</h3>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center">
+                                <div class="text-center">
+                                    <p class="text-gray-500 mb-4">Click to flip the card</p>
+                                    <div class="bg-purple-100 text-purple-800 p-4 rounded-lg cursor-pointer">
+                                        <p id="flashcard-question">What is the capital of France?</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flip-card-back h-full flex flex-col p-6 bg-purple-100">
+                            <div class="flex items-center mb-4">
+                                <div class="bg-purple-200 p-3 rounded-full mr-4">
+                                    <i class="fas fa-layer-group text-purple-700 text-xl"></i>
+                                </div>
+                                <h3 class="text-lg font-semibold text-purple-800">Flash Cards</h3>
+                            </div>
+                            <div class="flex-grow flex items-center justify-center">
+                                <div class="text-center">
+                                    <p class="text-purple-500 mb-4">The answer is:</p>
+                                    <div class="bg-white text-purple-800 p-4 rounded-lg">
+                                        <p id="flashcard-answer">Paris</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Study Planner -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden study-card transition">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-blue-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-calendar-alt text-blue-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Study Planner</h3>
+                        </div>
+                        <div class="mb-4">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-sm font-medium text-gray-700">Today's Tasks</span>
+                                <span class="text-xs text-gray-500"><span id="completed-tasks">3</span>/<span id="total-tasks">5</span> completed</span>
+                            </div>
+                            <div class="space-y-2" id="tasks-container">
+                                <!-- Tasks will be loaded here -->
+                            </div>
+                        </div>
+                        <button class="w-full bg-blue-50 text-blue-600 py-2 rounded-lg text-sm font-medium hover:bg-blue-100 transition" id="add-task-modal-btn">
+                            <i class="fas fa-plus mr-1"></i> Add Task
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Resource Library -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden study-card transition">
+                    <div class="p-6">
+                        <div class="flex items-center mb-4">
+                            <div class="bg-green-100 p-3 rounded-full mr-4">
+                                <i class="fas fa-book text-green-600 text-xl"></i>
+                            </div>
+                            <h3 class="text-lg font-semibold text-gray-800">Resource Library</h3>
+                        </div>
+                        <div class="space-y-3 mb-4" id="resources-container">
+                            <!-- Resources will be loaded here -->
+                        </div>
+                        <button class="w-full bg-green-50 text-green-600 py-2 rounded-lg text-sm font-medium hover:bg-green-100 transition" id="upload-resource-btn">
+                            <i class="fas fa-upload mr-1"></i> Upload Files
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Subjects Section -->
+        <section class="mb-12">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Your Subjects</h2>
+                <button class="text-indigo-600 font-medium hover:text-indigo-800 transition" id="add-subject-btn">
+                    <i class="fas fa-plus mr-1"></i> Add Subject
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="subjects-container">
+                <!-- Subjects will be loaded here -->
+            </div>
+        </section>
+
+        <!-- Study Statistics -->
+        <section>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Study Statistics</h2>
+            <div class="bg-white rounded-xl shadow-md p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-indigo-600 mb-2" id="sessions-count">24</div>
+                        <div class="text-gray-500">Study sessions this week</div>
+                        <div class="h-2 bg-gray-200 rounded-full mt-4">
+                            <div class="gradient-bg h-2 rounded-full" style="width: 70%"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-purple-600 mb-2" id="study-hours">18.5</div>
+                        <div class="text-gray-500">Total study hours</div>
+                        <div class="h-2 bg-gray-200 rounded-full mt-4">
+                            <div class="gradient-bg h-2 rounded-full" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-5xl font-bold text-green-600 mb-2" id="retention-rate">92%</div>
+                        <div class="text-gray-500">Retention rate</div>
+                        <div class="h-2 bg-gray-200 rounded-full mt-4">
+                            <div class="gradient-bg h-2 rounded-full" style="width: 92%"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-8">
+                    <canvas id="studyChart" height="300"></canvas>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center">
+                        <i class="fas fa-graduation-cap mr-2"></i> StudyHub
+                    </h3>
+                    <p class="text-gray-400">Your ultimate study companion for academic success and effective learning.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Features</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Pomodoro Timer</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Flashcards</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Study Planner</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Progress Tracking</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Resources</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Study Guides</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Blog</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Research Papers</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white transition">Video Lectures</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Connect</h4>
+                    <div class="flex space-x-4 mb-4">
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-indigo-600 transition">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-blue-400 transition">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="bg-gray-700 w-10 h-10 rounded-full flex items-center justify-center hover:bg-pink-600 transition">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div>
+                    <p class="text-gray-400">Subscribe to our newsletter</p>
+                    <div class="mt-2 flex">
+                        <input type="email" placeholder="Your email" class="bg-gray-700 text-white px-4 py-2 rounded-l-lg focus:outline-none w-full">
+                        <button class="bg-indigo-600 px-4 py-2 rounded-r-lg hover:bg-indigo-700 transition">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2023 StudyHub. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Auth Modal -->
+    <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold" id="auth-modal-title">Sign In</h3>
+                <button id="close-auth-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="auth-form">
+                <div class="mb-4">
+                    <label class="block text-gray-700 mb-2" for="email">Email</label>
+                    <input type="email" id="email" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-gray-700 mb-2" for="password">Password</label>
+                    <input type="password" id="password" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button id="signin-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition mb-2">
+                    Sign In
+                </button>
+                <button id="toggle-auth-mode" class="text-indigo-600 text-sm hover:underline">
+                    Don't have an account? Sign up
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Add New Task</h3>
+                <button id="close-task-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Task Title</label>
+                <input type="text" id="task-title" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Due Date</label>
+                <input type="date" id="task-due-date" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Subject</label>
+                <select id="task-subject" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select Subject</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Priority</label>
+                <select id="task-priority" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+            <button id="save-task-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                Save Task
+            </button>
+        </div>
+    </div>
+
+    <!-- Add Subject Modal -->
+    <div id="subject-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Add New Subject</h3>
+                <button id="close-subject-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Subject Name</label>
+                <input type="text" id="subject-name" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Instructor</label>
+                <input type="text" id="subject-instructor" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Color</label>
+                <select id="subject-color" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="red">Red</option>
+                    <option value="blue">Blue</option>
+                    <option value="green">Green</option>
+                    <option value="yellow">Yellow</option>
+                    <option value="purple">Purple</option>
+                    <option value="indigo">Indigo</option>
+                </select>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Description</label>
+                <textarea id="subject-description" rows="3" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            </div>
+            <button id="save-subject-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                Save Subject
+            </button>
+        </div>
+    </div>
+
+    <!-- Upload Resource Modal -->
+    <div id="resource-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">Upload Resource</h3>
+                <button id="close-resource-modal" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">File</label>
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                    <input type="file" id="resource-file" class="hidden">
+                    <label for="resource-file" class="cursor-pointer">
+                        <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-500">Click to upload or drag and drop</p>
+                        <p class="text-sm text-gray-400 mt-1">PDF, DOCX, PPTX, MP4, or images</p>
+                    </label>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Title</label>
+                <input type="text" id="resource-title" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 mb-2">Subject</label>
+                <select id="resource-subject" class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <option value="">Select Subject</option>
+                </select>
+            </div>
+            <button id="save-resource-btn" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition">
+                Upload Resource
+            </button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast hidden">
+        <div class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center">
+            <i class="fas fa-check-circle mr-2 text-green-400"></i>
+            <span id="toast-message">Operation successful</span>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Backend Simulation (In a real app, this would be a separate Node.js server)
+        class Backend {
+            constructor() {
+                this.users = [
+                    { id: 1, email: 'student@studyhub.com', password: 'password123', name: 'John Doe' }
+                ];
+                this.subjects = [
+                    { id: 1, userId: 1, name: 'Mathematics', instructor: 'Prof. Johnson', color: 'red', description: 'Advanced Calculus and Linear Algebra concepts with practical applications.' },
+                    { id: 2, userId: 1, name: 'Biology', instructor: 'Dr. Smith', color: 'green', description: 'Cellular biology and genetics with lab experiments and research papers.' },
+                    { id: 3, userId: 1, name: 'World History', instructor: 'Prof. Williams', color: 'yellow', description: '20th century global conflicts and their socio-political impacts.' }
+                ];
+                this.tasks = [
+                    { id: 1, userId: 1, subjectId: 1, title: 'Read Chapter 4', dueDate: new Date().toISOString().split('T')[0], priority: 'medium', completed: true },
+                    { id: 2, userId: 1, subjectId: 1, title: 'Solve Math problems', dueDate: new Date().toISOString().split('T')[0], priority: 'high', completed: true },
+                    { id: 3, userId: 1, subjectId: 2, title: 'Watch Lecture 3', dueDate: new Date().toISOString().split('T')[0], priority: 'medium', completed: true },
+                    { id: 4, userId: 1, subjectId: 3, title: 'Create Flashcards', dueDate: new Date().toISOString().split('T')[0], priority: 'low', completed: false },
+                    { id: 5, userId: 1, subjectId: 3, title: 'Review notes', dueDate: new Date().toISOString().split('T')[0], priority: 'medium', completed: false }
+                ];
+                this.resources = [
+                    { id: 1, userId: 1, subjectId: 1, title: 'Calculus_Notes.pdf', type: 'pdf', url: '#', uploadedAt: new Date().toISOString() },
+                    { id: 2, userId: 1, subjectId: 2, title: 'Biology_Lecture.mp4', type: 'video', url: '#', uploadedAt: new Date().toISOString() },
+                    { id: 3, userId: 1, subjectId: 3, title: 'History_Summary.txt', type: 'text', url: '#', uploadedAt: new Date().toISOString() }
+                ];
+                this.stats = {
+                    sessions: 24,
+                    hours: 18.5,
+                    retention: 92
+                };
+                this.currentUser = null;
+                this.authToken = null;
+            }
+
+            // Authentication methods
+            signIn(email, password) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        const user = this.users.find(u => u.email === email && u.password === password);
+                        if (user) {
+                            this.currentUser = user;
+                            this.authToken = 'fake-jwt-token-' + Math.random().toString(36).substring(2);
+                            resolve({ user, token: this.authToken });
+                        } else {
+                            reject(new Error('Invalid email or password'));
+                        }
+                    }, 500);
+                });
+            }
+
+            signUp(email, password, name) {
+                return new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        if (this.users.some(u => u.email === email)) {
+                            reject(new Error('Email already in use'));
+                        } else {
+                            const newUser = { 
+                                id: this.users.length + 1, 
+                                email, 
+                                password, 
+                                name 
+                            };
+                            this.users.push(newUser);
+                            this.currentUser = newUser;
+                            this.authToken = 'fake-jwt-token-' + Math.random().toString(36).substring(2);
+                            resolve({ user: newUser, token: this.authToken });
+                        }
+                    }, 500);
+                });
+            }
+
+            // Data methods
+            getSubjects() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(this.subjects.filter(s => s.userId === this.currentUser.id));
+                    }, 300);
+                });
+            }
+
+            addSubject(subject) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const newSubject = {
+                            id: this.subjects.length + 1,
+                            userId: this.currentUser.id,
+                            ...subject
+                        };
+                        this.subjects.push(newSubject);
+                        resolve(newSubject);
+                    }, 300);
+                });
+            }
+
+            getTasks() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(this.tasks.filter(t => t.userId === this.currentUser.id));
+                    }, 300);
+                });
+            }
+
+            addTask(task) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const newTask = {
+                            id: this.tasks.length + 1,
+                            userId: this.currentUser.id,
+                            completed: false,
+                            ...task
+                        };
+                        this.tasks.push(newTask);
+                        resolve(newTask);
+                    }, 300);
+                });
+            }
+
+            toggleTaskCompletion(taskId) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const task = this.tasks.find(t => t.id === taskId && t.userId === this.currentUser.id);
+                        if (task) {
+                            task.completed = !task.completed;
+                            resolve(task);
+                        }
+                    }, 300);
+                });
+            }
+
+            getResources() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(this.resources.filter(r => r.userId === this.currentUser.id));
+                    }, 300);
+                });
+            }
+
+            addResource(resource) {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        const newResource = {
+                            id: this.resources.length + 1,
+                            userId: this.currentUser.id,
+                            uploadedAt: new Date().toISOString(),
+                            ...resource
+                        };
+                        this.resources.push(newResource);
+                        resolve(newResource);
+                    }, 300);
+                });
+            }
+
+            getStats() {
+                return new Promise((resolve) => {
+                    setTimeout(() => {
+                        resolve(this.stats);
+                    }, 300);
+                });
+            }
+        }
+
+        // Initialize backend
+        const backend = new Backend();
+
+        // Frontend Application
+        class StudyHubApp {
+            constructor() {
+                this.initElements();
+                this.initEventListeners();
+                this.initAuth();
+                this.initChart();
+                this.initPomodoroTimer();
+                this.initFlashcards();
+            }
+
+            initElements() {
+                // Auth elements
+                this.authModal = document.getElementById('auth-modal');
+                this.authModalTitle = document.getElementById('auth-modal-title');
+                this.authForm = document.getElementById('auth-form');
+                this.emailInput = document.getElementById('email');
+                this.passwordInput = document.getElementById('password');
+                this.signinBtn = document.getElementById('signin-btn');
+                this.toggleAuthBtn = document.getElementById('toggle-auth-mode');
+                this.closeAuthModalBtn = document.getElementById('close-auth-modal');
+                this.authButton = document.getElementById('auth-button');
+                this.welcomeMessage = document.getElementById('welcome-message');
+
+                // Task elements
+                this.taskModal = document.getElementById('task-modal');
+                this.taskTitleInput = document.getElementById('task-title');
+                this.taskDueDateInput = document.getElementById('task-due-date');
+                this.taskSubjectSelect = document.getElementById('task-subject');
+                this.taskPrioritySelect = document.getElementById('task-priority');
+                this.saveTaskBtn = document.getElementById('save-task-btn');
+                this.closeTaskModalBtn = document.getElementById('close-task-modal');
+                this.addTaskBtn = document.getElementById('add-task-btn');
+                this.addTaskModalBtn = document.getElementById('add-task-modal-btn');
+                this.tasksContainer = document.getElementById('tasks-container');
+                this.completedTasksSpan = document.getElementById('completed-tasks');
+                this.totalTasksSpan = document.getElementById('total-tasks');
+
+                // Subject elements
+                this.subjectModal = document.getElementById('subject-modal');
+                this.subjectNameInput = document.getElementById('subject-name');
+                this.subjectInstructorInput = document.getElementById('subject-instructor');
+                this.subjectColorSelect = document.getElementById('subject-color');
+                this.subjectDescriptionInput = document.getElementById('subject-description');
+                this.saveSubjectBtn = document.getElementById('save-subject-btn');
+                this.closeSubjectModalBtn = document.getElementById('close-subject-modal');
+                this.addSubjectBtn = document.getElementById('add-subject-btn');
+                this.subjectsContainer = document.getElementById('subjects-container');
+
+                // Resource elements
+                this.resourceModal = document.getElementById('resource-modal');
+                this.resourceFileInput = document.getElementById('resource-file');
+                this.resourceTitleInput = document.getElementById('resource-title');
+                this.resourceSubjectSelect = document.getElementById('resource-subject');
+                this.saveResourceBtn = document.getElementById('save-resource-btn');
+                this.closeResourceModalBtn = document.getElementById('close-resource-modal');
+                this.uploadResourceBtn = document.getElementById('upload-resource-btn');
+                this.resourcesContainer = document.getElementById('resources-container');
+
+                // Progress elements
+                this.progressPercent = document.getElementById('progress-percent');
+                this.progressBar = document.getElementById('progress-bar');
+                this.progressCircle = document.getElementById('progress-circle');
+                this.progressText = document.getElementById('progress-text');
+
+                // Stats elements
+                this.sessionsCount = document.getElementById('sessions-count');
+                this.studyHours = document.getElementById('study-hours');
+                this.retentionRate = document.getElementById('retention-rate');
+
+                // Toast
+                this.toast = document.getElementById('toast');
+                this.toastMessage = document.getElementById('toast-message');
+
+                // Other elements
+                this.studyChart = document.getElementById('studyChart');
+            }
+
+            initEventListeners() {
+                // Auth events
+                this.authButton.addEventListener('click', () => this.showAuthModal('signin'));
+                this.toggleAuthBtn.addEventListener('click', () => this.toggleAuthMode());
+                this.signinBtn.addEventListener('click', (e) => this.handleAuth(e));
+                this.closeAuthModalBtn.addEventListener('click', () => this.hideAuthModal());
+
+                // Task events
+                this.addTaskBtn.addEventListener('click', () => this.showTaskModal());
+                this.addTaskModalBtn.addEventListener('click', () => this.showTaskModal());
+                this.saveTaskBtn.addEventListener('click', () => this.saveTask());
+                this.closeTaskModalBtn.addEventListener('click', () => this.hideTaskModal());
+
+                // Subject events
+                this.addSubjectBtn.addEventListener('click', () => this.showSubjectModal());
+                this.saveSubjectBtn.addEventListener('click', () => this.saveSubject());
+                this.closeSubjectModalBtn.addEventListener('click', () => this.hideSubjectModal());
+
+                // Resource events
+                this.uploadResourceBtn.addEventListener('click', () => this.showResourceModal());
+                this.saveResourceBtn.addEventListener('click', () => this.saveResource());
+                this.closeResourceModalBtn.addEventListener('click', () => this.hideResourceModal());
+            }
+
+            initAuth() {
+                // Check if user is already authenticated (in a real app, you'd check localStorage)
+                if (backend.currentUser) {
+                    this.updateUIForAuthenticatedUser();
+                } else {
+                    // For demo purposes, auto-login with demo user
+                    this.showAuthModal('signin');
+                }
+            }
+
+            async updateUIForAuthenticatedUser() {
+                const user = backend.currentUser;
+                this.welcomeMessage.textContent = `Welcome back, ${user.name.split(' ')[0]}!`;
+                this.authButton.textContent = 'Sign Out';
+                this.authButton.onclick = () => {
+                    backend.currentUser = null;
+                    backend.authToken = null;
+                    window.location.reload();
+                };
+
+                // Load data
+                await this.loadSubjects();
+                await this.loadTasks();
+                await this.loadResources();
+                await this.loadStats();
+
+                // Update progress (calculate based on tasks)
+                this.updateProgress();
+            }
+
+            showAuthModal(mode) {
+                this.authModalTitle.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                this.toggleAuthBtn.textContent = mode === 'signin' 
+                    ? "Don't have an account? Sign up" 
+                    : "Already have an account? Sign in";
+                this.signinBtn.textContent = mode === 'signin' ? 'Sign In' : 'Sign Up';
+                this.authModal.classList.remove('hidden');
+            }
+
+            hideAuthModal() {
+                this.authModal.classList.add('hidden');
+                this.emailInput.value = '';
+                this.passwordInput.value = '';
+            }
+
+            toggleAuthMode() {
+                const currentMode = this.authModalTitle.textContent.toLowerCase().includes('sign in') ? 'signin' : 'signup';
+                this.showAuthModal(currentMode === 'signin' ? 'signup' : 'signin');
+            }
+
+            async handleAuth(e) {
+                e.preventDefault();
+                const email = this.emailInput.value;
+                const password = this.passwordInput.value;
+                const isSignIn = this.authModalTitle.textContent.includes('Sign In');
+
+                try {
+                    if (isSignIn) {
+                        await backend.signIn(email, password);
+                    } else {
+                        const name = email.split('@')[0];
+                        await backend.signUp(email, password, name);
+                    }
+                    
+                    this.hideAuthModal();
+                    this.showToast('Authentication successful');
+                    this.updateUIForAuthenticatedUser();
+                } catch (error) {
+                    this.showToast(error.message, 'error');
+                }
+            }
+
+            async loadSubjects() {
+                try {
+                    const subjects = await backend.getSubjects();
+                    this.renderSubjects(subjects);
+                    this.populateSubjectDropdowns(subjects);
+                } catch (error) {
+                    this.showToast('Failed to load subjects', 'error');
+                }
+            }
+
+            renderSubjects(subjects) {
+                this.subjectsContainer.innerHTML = subjects.map(subject => {
+                    const colorMap = {
+                        red: 'bg-red-500',
+                        blue: 'bg-blue-500',
+                        green: 'bg-green-500',
+                        yellow: 'bg-yellow-500',
+                        purple: 'bg-purple-500',
+                        indigo: 'bg-indigo-500'
+                    };
+                    
+                    const statusMap = {
+                        red: 'bg-red-100 text-red-800',
+                        blue: 'bg-blue-100 text-blue-800',
+                        green: 'bg-green-100 text-green-800',
+                        yellow: 'bg-yellow-100 text-yellow-800',
+                        purple: 'bg-purple-100 text-purple-800',
+                        indigo: 'bg-indigo-100 text-indigo-800'
+                    };
+
+                    const statusText = subject.name === 'Mathematics' ? 
+                        '<i class="fas fa-exclamation-circle mr-1"></i> 2 Due Tasks' :
+                        subject.name === 'Biology' ?
+                        '<i class="fas fa-check-circle mr-1"></i> Up to date' :
+                        '<i class="fas fa-clock mr-1"></i> Exam in 5 days';
+
+                    return `
+                        <div class="bg-white rounded-xl shadow-md overflow-hidden study-card transition">
+                            <div class="h-3 ${colorMap[subject.color]}"></div>
+                            <div class="p-6">
+                                <div class="flex justify-between items-start mb-4">
+                                    <div>
+                                        <h3 class="text-xl font-bold text-gray-800 mb-1">${subject.name}</h3>
+                                        <p class="text-gray-500 text-sm">${subject.instructor}</p>
+                                    </div>
+                                    <div class="${statusMap[subject.color]} px-3 py-1 rounded-full text-xs font-medium">
+                                        ${statusText}
+                                    </div>
+                                </div>
+                                <p class="text-gray-600 mb-6">${subject.description}</p>
+                                <div class="flex justify-between items-center">
+                                    <div>
+                                        <span class="text-sm text-gray-500">Last studied:</span>
+                                        <span class="text-sm font-medium ml-1">${subject.name === 'Biology' ? 'Today' : subject.name === 'Mathematics' ? '2 days ago' : '1 week ago'}</span>
+                                    </div>
+                                    <button class="${colorMap[subject.color].replace('bg-', 'bg-').replace('-500', '-100')} text-${subject.color}-600 p-2 rounded-full hover:bg-${subject.color}-200 transition">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            populateSubjectDropdowns(subjects) {
+                // Clear existing options
+                this.taskSubjectSelect.innerHTML = '<option value="">Select Subject</option>';
+                this.resourceSubjectSelect.innerHTML = '<option value="">Select Subject</option>';
+
+                // Add new options
+                subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject.id;
+                    option.textContent = subject.name;
+                    this.taskSubjectSelect.appendChild(option.cloneNode(true));
+                    this.resourceSubjectSelect.appendChild(option);
+                });
+            }
+
+            showTaskModal() {
+                this.taskModal.classList.remove('hidden');
+                // Set default due date to today
+                this.taskDueDateInput.value = new Date().toISOString().split('T')[0];
+            }
+
+            hideTaskModal() {
+                this.taskModal.classList.add('hidden');
+                this.taskTitleInput.value = '';
+                this.taskDueDateInput.value = '';
+                this.taskSubjectSelect.value = '';
+                this.taskPrioritySelect.value = 'medium';
+            }
+
+            async saveTask() {
+                const task = {
+                    title: this.taskTitleInput.value,
+                    dueDate: this.taskDueDateInput.value,
+                    subjectId: parseInt(this.taskSubjectSelect.value),
+                    priority: this.taskPrioritySelect.value
+                };
+
+                if (!task.title) {
+                    this.showToast('Task title is required', 'error');
+                    return;
+                }
+
+                try {
+                    await backend.addTask(task);
+                    this.hideTaskModal();
+                    this.showToast('Task added successfully');
+                    this.loadTasks();
+                    this.updateProgress();
+                } catch (error) {
+                    this.showToast('Failed to add task', 'error');
+                }
+            }
+
+            async loadTasks() {
+                try {
+                    const tasks = await backend.getTasks();
+                    this.renderTasks(tasks);
+                } catch (error) {
+                    this.showToast('Failed to load tasks', 'error');
+                }
+            }
+
+            renderTasks(tasks) {
+                this.tasksContainer.innerHTML = tasks.map(task => {
+                    const subject = backend.subjects.find(s => s.id === task.subjectId);
+                    const colorMap = {
+                        red: 'text-red-500',
+                        blue: 'text-blue-500',
+                        green: 'text-green-500',
+                        yellow: 'text-yellow-500',
+                        purple: 'text-purple-500',
+                        indigo: 'text-indigo-500'
+                    };
+
+                    return `
+                        <div class="flex items-center">
+                            <input type="checkbox" class="rounded ${colorMap[subject?.color] || 'text-blue-500'} mr-2" 
+                                ${task.completed ? 'checked' : ''} 
+                                data-task-id="${task.id}"
+                                onclick="app.toggleTaskCompletion(${task.id})">
+                            <span class="text-sm ${task.completed ? 'line-through text-gray-500' : ''}">${task.title}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Update counters
+                const completed = tasks.filter(t => t.completed).length;
+                this.completedTasksSpan.textContent = completed;
+                this.totalTasksSpan.textContent = tasks.length;
+            }
+
+            async toggleTaskCompletion(taskId) {
+                try {
+                    await backend.toggleTaskCompletion(taskId);
+                    this.loadTasks();
+                    this.updateProgress();
+                } catch (error) {
+                    this.showToast('Failed to update task', 'error');
+                }
+            }
+
+            showSubjectModal() {
+                this.subjectModal.classList.remove('hidden');
+                // Reset form
+                this.subjectNameInput.value = '';
+                this.subjectInstructorInput.value = '';
+                this.subjectColorSelect.value = 'red';
+                this.subjectDescriptionInput.value = '';
+            }
+
+            hideSubjectModal() {
+                this.subjectModal.classList.add('hidden');
+            }
+
+            async saveSubject() {
+                const subject = {
+                    name: this.subjectNameInput.value,
+                    instructor: this.subjectInstructorInput.value,
+                    color: this.subjectColorSelect.value,
+                    description: this.subjectDescriptionInput.value
+                };
+
+                if (!subject.name) {
+                    this.showToast('Subject name is required', 'error');
+                    return;
+                }
+
+                try {
+                    await backend.addSubject(subject);
+                    this.hideSubjectModal();
+                    this.showToast('Subject added successfully');
+                    this.loadSubjects();
+                } catch (error) {
+                    this.showToast('Failed to add subject', 'error');
+                }
+            }
+
+            showResourceModal() {
+                this.resourceModal.classList.remove('hidden');
+                // Reset form
+                this.resourceFileInput.value = '';
+                this.resourceTitleInput.value = '';
+                this.resourceSubjectSelect.value = '';
+            }
+
+            hideResourceModal() {
+                this.resourceModal.classList.add('hidden');
+            }
+
+            async saveResource() {
+                const file = this.resourceFileInput.files[0];
+                if (!file) {
+                    this.showToast('Please select a file', 'error');
+                    return;
+                }
+
+                const title = this.resourceTitleInput.value || file.name;
+                const subjectId = parseInt(this.resourceSubjectSelect.value);
+
+                const resource = {
+                    title,
+                    subjectId,
+                    type: this.getFileType(file.name),
+                    url: '#' // In a real app, you'd upload the file and get a URL
+                };
+
+                try {
+                    await backend.addResource(resource);
+                    this.hideResourceModal();
+                    this.showToast('Resource uploaded successfully');
+                    this.loadResources();
+                } catch (error) {
+                    this.showToast('Failed to upload resource', 'error');
+                }
+            }
+
+            getFileType(filename) {
+                const extension = filename.split('.').pop().toLowerCase();
+                if (['pdf'].includes(extension)) return 'pdf';
+                if (['doc', 'docx'].includes(extension)) return 'document';
+                if (['ppt', 'pptx'].includes(extension)) return 'presentation';
+                if (['mp4', 'mov', 'avi'].includes(extension)) return 'video';
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) return 'image';
+                if (['txt', 'md'].includes(extension)) return 'text';
+                return 'file';
+            }
+
+            async loadResources() {
+                try {
+                    const resources = await backend.getResources();
+                    this.renderResources(resources);
+                } catch (error) {
+                    this.showToast('Failed to load resources', 'error');
+                }
+            }
+
+            renderResources(resources) {
+                this.resourcesContainer.innerHTML = resources.map(resource => {
+                    const subject = backend.subjects.find(s => s.id === resource.subjectId);
+                    const iconMap = {
+                        pdf: 'fa-file-pdf text-red-500',
+                        document: 'fa-file-word text-blue-500',
+                        presentation: 'fa-file-powerpoint text-orange-500',
+                        video: 'fa-file-video text-blue-400',
+                        image: 'fa-file-image text-green-500',
+                        text: 'fa-file-alt text-yellow-500',
+                        file: 'fa-file text-gray-500'
+                    };
+
+                    return `
+                        <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                            <i class="fas ${iconMap[resource.type] || iconMap.file} mr-3"></i>
+                            <span class="text-sm">${resource.title}</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            async loadStats() {
+                try {
+                    const stats = await backend.getStats();
+                    this.sessionsCount.textContent = stats.sessions;
+                    this.studyHours.textContent = stats.hours;
+                    this.retentionRate.textContent = stats.retention + '%';
+                } catch (error) {
+                    this.showToast('Failed to load statistics', 'error');
+                }
+            }
+
+            updateProgress() {
+                const tasks = backend.tasks;
+                const completed = tasks.filter(t => t.completed).length;
+                const total = tasks.length;
+                const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                this.progressPercent.textContent = percentage;
+                this.progressBar.style.width = percentage + '%';
+                this.progressText.textContent = percentage + '%';
+                
+                // Update progress circle
+                const circumference = 2 * Math.PI * 40;
+                const offset = circumference - (percentage / 100) * circumference;
+                this.progressCircle.style.strokeDashoffset = offset;
+            }
+
+            showToast(message, type = 'success') {
+                this.toastMessage.textContent = message;
+                
+                // Update icon based on type
+                const icon = this.toast.querySelector('i');
+                if (type === 'error') {
+                    icon.className = 'fas fa-exclamation-circle mr-2 text-red-400';
+                } else {
+                    icon.className = 'fas fa-check-circle mr-2 text-green-400';
+                }
+
+                this.toast.classList.remove('hidden');
+                setTimeout(() => {
+                    this.toast.classList.add('hidden');
+                }, 3000);
+            }
+
+            initChart() {
+                const ctx = this.studyChart.getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                        datasets: [
+                            {
+                                label: 'Study Hours',
+                                data: [2.5, 3, 2.8, 3.5, 4, 1.5, 1.2],
+                                borderColor: '#667eea',
+                                backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: true
+                            },
+                            {
+                                label: 'Flashcards Reviewed',
+                                data: [15, 20, 18, 25, 30, 10, 5],
+                                borderColor: '#764ba2',
+                                backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: true
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                            },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            initPomodoroTimer() {
+                let timerInterval;
+                let timeLeft = 25 * 60; // 25 minutes in seconds
+                let isRunning = false;
+                let isBreak = false;
+
+                const timerDisplay = document.getElementById('timer-display');
+                const timerState = document.getElementById('timer-state');
+                const startButton = document.getElementById('start-timer');
+                const pauseButton = document.getElementById('pause-timer');
+                const resetButton = document.getElementById('reset-timer');
+
+                function updateDisplay() {
+                    const minutes = Math.floor(timeLeft / 60);
+                    const seconds = timeLeft % 60;
+                    timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                }
+
+                function startTimer() {
+                    if (!isRunning) {
+                        isRunning = true;
+                        timerState.textContent = isBreak ? 'Break time!' : 'Focus time!';
+                        startButton.innerHTML = '<i class="fas fa-play"></i>';
+                        startButton.classList.remove('bg-indigo-600');
+                        startButton.classList.add('bg-gray-200', 'text-gray-700');
+                        
+                        timerInterval = setInterval(() => {
+                            timeLeft--;
+                            updateDisplay();
+                            
+                            if (timeLeft <= 0) {
+                                clearInterval(timerInterval);
+                                isRunning = false;
+                                const audio = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3');
+                                audio.play();
+                                
+                                if (isBreak) {
+                                    // Break ended, start work session
+                                    isBreak = false;
+                                    timeLeft = 25 * 60;
+                                    timerState.textContent = 'Break over! Ready for work?';
+                                } else {
+                                    // Work session ended, start break
+                                    isBreak = true;
+                                    timeLeft = 5 * 60;
+                                    timerState.textContent = 'Work session complete! Take a break?';
+                                }
+                                
+                                updateDisplay();
+                            }
+                        }, 1000);
+                    }
+                }
+
+                function pauseTimer() {
+                    if (isRunning) {
+                        clearInterval(timerInterval);
+                        isRunning = false;
+                        timerState.textContent = 'Paused';
+                        startButton.innerHTML = '<i class="fas fa-play"></i>';
+                        startButton.classList.remove('bg-gray-200', 'text-gray-700');
+                        startButton.classList.add('bg-indigo-600', 'text-white');
+                    }
+                }
+
+                function resetTimer() {
+                    clearInterval(timerInterval);
+                    isRunning = false;
+                    isBreak = false;
+                    timeLeft = 25 * 60;
+                    timerState.textContent = 'Ready to start';
+                    updateDisplay();
+                    startButton.innerHTML = '<i class="fas fa-play"></i>';
+                    startButton.classList.remove('bg-gray-200', 'text-gray-700');
+                    startButton.classList.add('bg-indigo-600', 'text-white');
+                }
+
+                startButton.addEventListener('click', startTimer);
+                pauseButton.addEventListener('click', pauseTimer);
+                resetButton.addEventListener('click', resetTimer);
+
+                updateDisplay();
+            }
+
+            initFlashcards() {
+                const flashcards = [
+                    { question: "What is the capital of France?", answer: "Paris" },
+                    { question: "What is the chemical symbol for gold?", answer: "Au" },
+                    { question: "Who painted the Mona Lisa?", answer: "Leonardo da Vinci" },
+                    { question: "What is the largest planet in our solar system?", answer: "Jupiter" }
+                ];
+                
+                let currentCard = 0;
+                const flashcardQuestion = document.getElementById('flashcard-question');
+                const flashcardAnswer = document.getElementById('flashcard-answer');
+                
+                function updateFlashcard() {
+                    flashcardQuestion.textContent = flashcards[currentCard].question;
+                    flashcardAnswer.textContent = flashcards[currentCard].answer;
+                }
+                
+                document.querySelector('.flip-card').addEventListener('click', function() {
+                    currentCard = (currentCard + 1) % flashcards.length;
+                    setTimeout(updateFlashcard, 600); // Change after flip animation
+                });
+                
+                updateFlashcard();
+            }
+        }
+
+        // Initialize the app
+        const app = new StudyHubApp();
+        window.app = app; // Make app globally available for HTML onclick handlers
+
+        // Helper function for task toggling from HTML
+        window.toggleTaskCompletion = (taskId) => app.toggleTaskCompletion(taskId);
+    </script>
+</body>
+</html>
